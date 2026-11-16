@@ -93,7 +93,7 @@ $('start').onclick = () => {
   if (!s.categories.length) { toast('Select at least one clip category.'); return; }
   const fd = new FormData(); fd.append('options', JSON.stringify(s));
   if (S.mode === 'upload') { if (!S.file) { toast('Choose a video file first.'); return; } fd.append('file', S.file); }
-  else { const u = $('videoUrl').value.trim(); if (!u) { toast('Paste a direct HTTPS video URL.'); return; } fd.append('video_url', u); }
+  else { const u = $('videoUrl').value.trim(); if (!u) { toast('Paste a YouTube link or direct HTTPS video URL.'); return; } fd.append('video_url', u); }
   $('start').disabled = true; setProgress(1, 'Uploading…');
   const x = new XMLHttpRequest(); x.open('POST', '/api/jobs'); x.setRequestHeader('X-Requested-With', 'ClipForge'); x.withCredentials = true;
   x.upload.onprogress = e => { if (e.lengthComputable) setProgress(Math.min(99, Math.round(e.loaded / e.total * 100)), `Uploading… ${Math.round(e.loaded / 1048576)} MB`); };
