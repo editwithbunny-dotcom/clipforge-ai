@@ -225,7 +225,7 @@ async def create_job(request: Request, file: Optional[UploadFile] = File(None), 
         raise HTTPException(429, f"You already have {s.max_active_jobs_per_user} jobs running. Wait for one to finish or cancel it.")
     if db.count_jobs_since(uid, time.time() - 86400) >= s.max_jobs_per_day:
         raise HTTPException(429, "Daily job limit reached. Try again tomorrow.")
-    if shutil.disk_usage(s.data_dir).free < 3 * 1024 ** 3:
+    if shutil.disk_usage(s.data_dir).free < 100 * 1024 ** 2:
         raise HTTPException(503, "The server is low on disk space. Try again later.")
 
     src_path, name = None, "video-url"
