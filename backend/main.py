@@ -251,11 +251,12 @@ async def create_job(request: Request, file: Optional[UploadFile] = File(None), 
             raise HTTPException(400, "That file could not be read as a video.")
         src_path = str(dest)
     else:
+        clean_url = video_url.strip()
         try:
-            await run_in_threadpool(security.check_public_https_url, video_url.strip())
+            await run_in_threadpool(security.check_public_https_url, clean_url)
         except security.UnsafeURL as e:
             raise HTTPException(400, str(e))
-        o["video_url"] = video_url.strip()
+        o["video_url"] = clean_url
         name = urlparse(video_url).hostname or "video-url"
     jid = db.create_job(uid, src_path, name, o)
     return {"job_id": jid}
