@@ -99,7 +99,7 @@ def register(c: Creds, request: Request, response: Response):
         raise HTTPException(403, "Registration is closed.")
     if s.invite_code and c.invite_code != s.invite_code:
         raise HTTPException(403, "A valid invite code is required.")
-    if not security.limiter.allow(f"reg:{client_ip(request)}", 5, 3600):
+    if not security.limiter.allow(f"reg:{client_ip(request)}", 20, 3600):
         raise HTTPException(429, "Too many sign-ups from this address. Try again later.")
     try:
         security.validate_credentials(c.email, c.password)
