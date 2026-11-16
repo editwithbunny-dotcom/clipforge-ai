@@ -5,7 +5,7 @@ import shutil
 import threading
 import time
 from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import requests
 
@@ -22,7 +22,79 @@ class JobFailed(Exception):
     """A failure whose message is safe to show to the user."""
 
 
-def download_url(url: str, dest_dir: Path, jid: str, max_bytes: int, cancel) -> Path:
+
+YOUTUBE_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"}
+
+def is_youtube_url(url: str) -> bool:
+    p = urlparse(url or "")
+    return p.scheme == "https" and (p.hostname or "").lower() in YOUTUBE_HOSTS
+
+
+def download_youtube(url: str, dest_dir: Path, jid: str, max_bytes: int, max_seconds: int, cancel) -> Path:
+    """Download one public YouTube video the user is authorized to process."""
+    try:
+        import yt_dlp
+    except ImportError as e:
+        raise JobFailed("YouTube support is not installed on this server. Please try again after deployment.") from e
+
+    template = str(dest_dir / f"{jid}_youtube.%(ext)s")
+    def progress_hook(data):
+        if cancel():
+            raise video.Cancelled()
+        size = data.get("total_bytes") or data.get("total_bytes_estimate") or data.get("downloaded_bytes") or 0
+        if size > max_bytes:
+            raise JobFailed("The YouTube video is larger than this server's upload limit.")
+    def duration_filter(info, *, incomplete):
+        duration = info.get("duration")
+        if duration and duration > max_seconds:
+            return f"Videos longer than {max_seconds // 60} minutes are not supported on this server."
+        return None
+
+    opts = {
+        "format": "best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best",
+        "outtmpl": template,
+        "noplaylist": True,
+        "quiet": True,
+        "no_warnings": True,
+        "retries": 2,
+        "fragment_retries": 2,
+        "socket_timeout": 20,
+        "max_filesize": max_bytes,
+        "merge_output_format": "mp4",
+        "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
+        "progress_hooks": [progress_hook],
+        "match_filter": duration_filter,
+    }
+    try:
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            requested = info.get("requested_downloads") or []
+            candidates = [Path(x["filepath"]) for x in requested if x.get("filepath")]
+            if not candidates:
+                candidates = list(dest_dir.glob(f"{jid}_youtube.*"))
+            candidates = [p for p in candidates if p.is_file()]
+            if not candidates:
+                raise JobFailed("YouTube did not provide a downloadable video file.")
+            dest = max(candidates, key=lambda p: p.stat().st_size)
+            if dest.stat().st_size > max_bytes:
+                dest.unlink(missing_ok=True)
+                raise JobFailed("The YouTube video is larger than this server's upload limit.")
+            mp4 = dest_dir / f"{jid}_source.mp4"
+            if dest != mp4:
+                dest.replace(mp4)
+            return mp4
+    except video.Cancelled:
+        raise
+    except JobFailed:
+        raise
+    except Exception as e:
+        log.warning("YouTube download failed for job %s: %s", jid, e)
+        raise JobFailed("Could not download this YouTube video. Check that it is public, available in your region, and that you have permission to process it.") from e
+
+
+def download_url(url: str, dest_dir: Path, jid: str, max_bytes: int, cancel, max_seconds: int = 600) -> Path:
+    if is_youtube_url(url):
+        return download_youtube(url, dest_dir, jid, max_bytes, max_seconds, cancel)
     cur = url
     for _ in range(4):
         check_public_https_url(cur)  # re-validated on every redirect hop
@@ -75,7 +147,7 @@ def process(job) -> None:
 
         if src is None:
             _set(jid, "downloading", "Downloading video…", 5)
-            src = download_url(opts["video_url"], work, jid, s.max_upload_bytes, cancel)
+            src = download_url(opts["video_url"], work, jid, s.max_upload_bytes, cancel, s.max_source_seconds)
             db.update_job(jid, source_path=str(src))
         info = video.probe(src)
         if info["duration"] < opts["min_duration"] + 1:
