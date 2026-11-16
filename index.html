@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClipForge AI — Studio</title><link rel="stylesheet" href="/static/app.css"></head>
+<body><div class="wrap">
+<header class="top"><div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4v16l14-8L5 4Z" fill="white"/></svg></div>ClipForge <span class="grad">AI</span></div>
+<div class="actions hidden" id="topActions"><span class="muted small" id="who"></span><button class="btn" id="settingsBtn">⚙ Studio Settings</button><button class="btn" id="logoutBtn">Sign out</button></div></header>
+
+<section id="authView" class="authwrap hidden"><div class="panel"><h2 id="authTitle">Sign in</h2><p class="muted small">Create an account to turn long videos into clips.</p>
+<div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email"></div>
+<div class="field"><label for="password">Password (10+ characters)</label><input id="password" type="password" autocomplete="current-password"></div>
+<div class="field hidden" id="inviteField"><label for="invite">Invite code</label><input id="invite" type="text"></div>
+<button class="btn primary block" id="authSubmit">Sign in</button><div class="err" id="authErr"></div>
+<p class="small muted"><a href="#" id="authToggle" class="lnk">Need an account? Register</a></p></div></section>
+
+<div id="studioView" class="hidden">
+<section class="hero"><div class="eyebrow">AI video clipping workspace</div><h1>Long videos in.<br><span class="grad">Great clips out.</span></h1>
+<p class="sub">Upload a video you own or are authorized to edit. ClipForge transcribes it, scores the funniest, most engaging and most important moments with your chosen AI model, then renders captioned, face-tracked clips.</p></section>
+<div class="layout"><main>
+<section class="panel"><h2>Create a clipping project</h2><p class="muted small" id="srcHint">Use a video you own or have permission to process.</p>
+<div class="source-tabs"><button class="tab active" data-tab="upload">Upload video</button><button class="tab" data-tab="url">Direct video URL</button></div>
+<div id="uploadPane"><div class="drop" id="drop"><label for="file">Choose a video file</label><div class="small muted">or drag and drop · MP4, MOV, MKV, WEBM, M4V</div><input id="file" type="file" accept="video/*"><div class="fileinfo" id="fileInfo">No video selected</div></div></div>
+<div id="urlPane" class="hidden"><div class="urlrow"><input id="videoUrl" placeholder="https://example.com/video.mp4"></div><p class="hint">Only public HTTPS links that point directly to a video file. YouTube/Facebook/Instagram page links are not supported — upload the file or use a direct export link you are authorized to use.</p></div>
+<div class="chips" id="chips"></div>
+<button class="btn primary block" id="start">✦ Analyze &amp; create clips</button>
+<div class="progress" id="progress"><div id="bar"></div></div><div class="status" id="status"></div></section>
+<div class="sectionhead"><h2>Your projects</h2><span class="muted small" id="jobCount"></span></div>
+<div class="empty" id="empty"><div class="orb">✦</div><b class="strong">No projects yet</b><p class="small">Add an API key in Studio Settings, then upload a video.</p></div><div id="jobs"></div>
+</main><aside>
+<section class="panel"><h2>How it works</h2><div class="steps">
+<div class="step"><div class="num">01</div><div><b>Transcribe</b><span>Speech is transcribed with word timestamps using your selected model.</span></div></div>
+<div class="step"><div class="num">02</div><div><b>Score moments</b><span>Candidate windows are scored for comedy, engagement and importance by the analysis model, plus audio energy and scene changes.</span></div></div>
+<div class="step"><div class="num">03</div><div><b>Pick the best</b><span>One clip per category, non-overlapping, cut on sentence boundaries.</span></div></div>
+<div class="step"><div class="num">04</div><div><b>Render</b><span>Face-tracked crop, burned-in captions, audio enhancement, H.264/AAC MP4.</span></div></div></div></section>
+</aside></div></div>
+<div class="footer">CLIPFORGE AI · Only process videos you own or are authorized to edit.</div></div>
+
+<div class="modalbg" id="modal"><div class="modal"><div class="modalhead"><div><b>Studio Settings</b><div class="muted small">Saved to your account</div></div><button class="close" id="close">×</button></div>
+<div class="section"><h3>AI provider &amp; keys</h3>
+<div class="field"><label for="provider">Provider used for new projects</label><select id="provider"><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option></select></div>
+<div class="field"><label for="keyInput">API key for the selected provider</label><div class="keyrow"><input id="keyInput" type="password" autocomplete="off" placeholder="Paste key — verified, then stored encrypted on the server"><button class="btn" id="keySave">Verify &amp; save</button></div><div class="keystate none" id="keyState"></div><button class="linkbtn hidden" id="keyDelete">Remove saved key</button></div>
+<div class="field"><label for="transModel">Transcription model</label><select id="transModel"></select><div class="hint" id="transHint"></div></div>
+<div class="field"><label for="analysisModel">Highlight analysis model</label><select id="analysisModel"></select></div></div>
+<div class="section"><h3>Clips</h3>
+<div class="field"><label>Moments to find (one clip each)</label><div class="checks"><label><input type="checkbox" id="catComedy" value="comedy"> Comedy</label><label><input type="checkbox" id="catEngagement" value="engagement"> Engagement</label><label><input type="checkbox" id="catImportant" value="important"> Important moment</label></div></div>
+<div class="field"><label for="duration">Clip length</label><select id="duration"><option value="30-60">30–60 seconds</option><option value="30-45">30–45 seconds</option><option value="45-60">45–60 seconds</option><option value="15-30">15–30 seconds</option><option value="60-90">60–90 seconds</option></select></div></div>
+<div class="section"><h3>Video</h3>
+<div class="field"><label for="format">Output format</label><select id="format"><option value="9:16">9:16 · Shorts / Reels / TikTok</option><option value="1:1">1:1 · Square</option><option value="16:9">16:9 · Landscape</option></select></div>
+<div class="field"><label for="quality">Export resolution</label><select id="quality"><option value="1080">1080p</option><option value="720">720p (faster)</option></select></div>
+<div class="field"><label for="framing">Framing</label><select id="framing"><option value="track">Smart crop — follow the speaker's face</option><option value="center">Center crop</option><option value="blur">Fit with blurred background</option></select></div></div>
+<div class="section"><h3>Captions &amp; audio</h3>
+<div class="field"><label for="captionStyle">Captions</label><select id="captionStyle"><option value="bold">Bold, word-highlight (3 words)</option><option value="clean">Clean sentence captions</option><option value="none">No captions</option></select></div>
+<div class="field"><label for="captionLanguage">Spoken language</label><select id="captionLanguage"><option value="auto">Auto-detect</option><option value="en">English</option><option value="bn">Bangla</option><option value="hi">Hindi</option><option value="ar">Arabic</option><option value="es">Spanish</option></select></div>
+<div class="field"><label for="audio">Audio enhancement</label><select id="audio"><option value="clean">Clean — denoise + loudness normalize</option><option value="studio">Studio — denoise, compress, EQ, normalize</option><option value="off">Off (original audio)</option></select></div></div>
+<div class="err" id="setErr"></div><div class="modalfoot"><button class="btn" id="cancelSet">Close</button><button class="btn primary" id="saveSet">Save settings</button></div></div></div>
+<div class="toast" id="toast"></div>
+<script src="/static/app.js"></script></body></html>

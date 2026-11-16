@@ -1,0 +1,37 @@
+# Render Blueprint. Review the plan and disk size in the Render dashboard before applying — paid resources are billed to your account.
+services:
+  - type: web
+    name: clipforge-ai
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: standard            # video rendering needs real CPU/RAM; a persistent disk is not available on the free plan
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    disk:
+      name: clipforge-data
+      mountPath: /data
+      sizeGB: 20
+    envVars:
+      - key: CLIPFORGE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /data
+      - key: SECRET_KEY        # signs sessions and encrypts stored API keys. Do NOT change after users save keys.
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: ALLOW_REGISTRATION
+        value: "1"
+      - key: INVITE_CODE       # optional: set in the dashboard to require an invite code at sign-up
+        sync: false
+      - key: MAX_UPLOAD_MB
+        value: "1024"
+      - key: MAX_SOURCE_MINUTES
+        value: "120"
+      - key: MAX_ACTIVE_JOBS_PER_USER
+        value: "2"
+      - key: MAX_JOBS_PER_DAY
+        value: "20"
+      - key: RETENTION_HOURS
+        value: "72"

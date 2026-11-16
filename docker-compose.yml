@@ -1,0 +1,12 @@
+services:
+  clipforge:
+    build: ./backend
+    ports: ["10000:10000"]
+    environment:
+      CLIPFORGE_ENV: ${CLIPFORGE_ENV:-production}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY to a random string of 32+ characters}
+      COOKIE_SECURE: ${COOKIE_SECURE:-0}   # set to 1 when served over HTTPS
+    volumes: ["clipforge_data:/data"]
+    restart: unless-stopped
+volumes:
+  clipforge_data:
