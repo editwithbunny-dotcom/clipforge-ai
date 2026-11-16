@@ -17,9 +17,9 @@
 <p class="sub">Upload a video you own or are authorized to edit. ClipForge transcribes it, scores the funniest, most engaging and most important moments with your chosen AI model, then renders captioned, face-tracked clips.</p></section>
 <div class="layout"><main>
 <section class="panel"><h2>Create a clipping project</h2><p class="muted small" id="srcHint">Use a video you own or have permission to process.</p>
-<div class="source-tabs"><button class="tab active" data-tab="upload">Upload video</button><button class="tab" data-tab="url">Direct video URL</button></div>
+<div class="source-tabs"><button class="tab active" data-tab="upload">Upload video</button><button class="tab" data-tab="url">Video URL / YouTube</button></div>
 <div id="uploadPane"><div class="drop" id="drop"><label for="file">Choose a video file</label><div class="small muted">or drag and drop · MP4, MOV, MKV, WEBM, M4V</div><input id="file" type="file" accept="video/*"><div class="fileinfo" id="fileInfo">No video selected</div></div></div>
-<div id="urlPane" class="hidden"><div class="urlrow"><input id="videoUrl" placeholder="https://example.com/video.mp4"></div><p class="hint">Only public HTTPS links that point directly to a video file. YouTube/Facebook/Instagram page links are not supported — upload the file or use a direct export link you are authorized to use.</p></div>
+<div id="urlPane" class="hidden"><div class="urlrow"><input id="videoUrl" placeholder="Paste a YouTube link or direct MP4 URL"></div><p class="hint">Paste a public YouTube video link or a direct HTTPS video-file link. YouTube videos are downloaded as MP4 before clipping. Only process videos you own or have permission to use; private or age-restricted videos may not work.</p></div>
 <div class="chips" id="chips"></div>
 <button class="btn primary block" id="start">✦ Analyze &amp; create clips</button>
 <div class="progress" id="progress"><div id="bar"></div></div><div class="status" id="status"></div></section>
